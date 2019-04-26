@@ -7,6 +7,9 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
 
 static const char *dirpath = "/home/cyber12drago/shift4";
@@ -45,8 +48,9 @@ static int a11_getattr(const char *path, struct stat *stbuf)
 static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
-	int i,j;  
-    char fpath[1000],cekname[1000],cekno3[1000];
+	int i,j,tahun;  
+    char fpath[1000],cekname[1000];
+    char soalno3[1000],fileno3[1000],waktuno3[2064];
     char characterlist[1000]="qE1~ YMUR2\"`hNIdPzi%^t@(Ao:=CQ,nx4S[7mHFye#aT6+v)DfKL$r?bkOGB>}!9_wV']jcp5JZ&Xl|\\8s;g<{3.u*W-0";
 	if(strcmp(path,"/") == 0)
 	{
@@ -81,16 +85,24 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		return -errno;
 
 	while ((de = readdir(dp)) != NULL) {
-		struct stat st;
-		memset(&st, 0, sizeof(st));
-        sprintf(temp,"%s/%s",fpath,name);
+		struct stat sta;
+		memset(&sta, 0, sizeof(sta));
+        sprintf(soalno3,"%s/%s",fpath,cekname);
 		strcpy(cekname,de->d_name);
-        stat(temp,&st)
-        st.st_ino = de->d_ino;
-        st.st_mode = de->d_type << 12;
-            if(strcmp(cekname,".")!=0 && strcmp(cekname,"..")!=0){
-                if(((strcmp(getpwuid(sta.st_uid)->pw_name,"chipset"))==0)||((strcmp(getgrgid(sta.st_uid)->pw_name,"ic_controller"))==0)&&((strcmp(getgrgid(sta.st_gid)->gr_name,"rusak"))==0)){
-                    struct tm *times=localtime(&st.st_atime);
+        stat(soalno3,&sta);
+        sta.st_ino = de->d_ino;
+        sta.st_mode = de->d_type << 12;
+        if(strcmp(cekname,".")!=0 && strcmp(cekname,"..")!=0){
+                if((((strcmp(getpwuid(sta.st_uid)->pw_name,"chipset"))==0)||((strcmp(getpwuid(sta.st_uid)->pw_name,"ic_controller"))==0))&&((strcmp(getgrgid(sta.st_gid)->gr_name,"rusak"))==0)){
+                    FILE * simpan;
+                    struct tm *times=localtime(&sta.st_atime);
+                    tahun = times->tm_year + 1900;
+                    sprintf(fileno3, "%s/V[EOr[c[Y`HDH", dirpath);
+                    sprintf(waktuno3, "%s %d %d | time and date : %02d:%02d:%02d [%02d %02d %04d]\n",soalno3, sta.st_uid, sta.st_gid, times->tm_hour, times->tm_min, times->tm_sec, times->tm_mday, times->tm_mon, tahun);
+                    simpan = fopen(fileno3, "a+");
+                    fputs(waktuno3,simpan);
+                    fclose(simpan);
+                    remove(soalno3);
                     
                 }    
                 else{
@@ -110,7 +122,7 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
                     }
                 }
         }
-		res = (filler(buf, cekname, &st, 0));
+		res = (filler(buf, cekname, &sta, 0));
 			if(res!=0) break;
 	}
 	closedir(dp);
@@ -120,7 +132,7 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 static int a11_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 { 
-    char fpath[1000],cekname[1000];
+    char fpath[1000];
 	if(strcmp(path,"/") == 0)
 	{
 		path=dirpath;
@@ -128,6 +140,7 @@ static int a11_read(const char *path, char *buf, size_t size, off_t offset,
 	}
 	else {
         sprintf(fpath, "%s%s",dirpath,path);
+
     }
 	int res = 0;
 	int fd = 0;
