@@ -46,7 +46,7 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi)
 {
 	int i,j;  
-    char fpath[1000],cekname[1000];
+    char fpath[1000],cekname[1000],cekno3[1000];
     char characterlist[1000]="qE1~ YMUR2\"`hNIdPzi%^t@(Ao:=CQ,nx4S[7mHFye#aT6+v)DfKL$r?bkOGB>}!9_wV']jcp5JZ&Xl|\\8s;g<{3.u*W-0";
 	if(strcmp(path,"/") == 0)
 	{
@@ -83,25 +83,32 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	while ((de = readdir(dp)) != NULL) {
 		struct stat st;
 		memset(&st, 0, sizeof(st));
+        sprintf(temp,"%s/%s",fpath,name);
 		strcpy(cekname,de->d_name);
+        stat(temp,&st)
         st.st_ino = de->d_ino;
-		st.st_mode = de->d_type << 12;
-		
-		if(strcmp(cekname,".")!=0 && strcmp(cekname,"..")!=0){
-            for(i=0;i<strlen(cekname);i++){
-                for(j=0;j<strlen(characterlist);j++){
-                    if(cekname[i]==characterlist[j]){
-                            if(j-17<0){
-                                j=j-17+strlen(characterlist);
-                                cekname[i]=characterlist[j];
+        st.st_mode = de->d_type << 12;
+            if(strcmp(cekname,".")!=0 && strcmp(cekname,"..")!=0){
+                if(((strcmp(getpwuid(sta.st_uid)->pw_name,"chipset"))==0)||((strcmp(getgrgid(sta.st_uid)->pw_name,"ic_controller"))==0)&&((strcmp(getgrgid(sta.st_gid)->gr_name,"rusak"))==0)){
+                    struct tm *times=localtime(&st.st_atime);
+                    
+                }    
+                else{
+                    for(i=0;i<strlen(cekname);i++){
+                        for(j=0;j<strlen(characterlist);j++){
+                            if(cekname[i]==characterlist[j]){
+                                if(j-17<0){
+                                    j=j-17+strlen(characterlist);
+                                    cekname[i]=characterlist[j];
+                                }
+                                else{
+                                    cekname[i]=characterlist[(j-17)];
+                                }
+                                break;
                             }
-                            else{
-                                cekname[i]=characterlist[(j-17)];
-                            }
-                            break;
+                        }
                     }
                 }
-            }
         }
 		res = (filler(buf, cekname, &st, 0));
 			if(res!=0) break;
@@ -112,9 +119,8 @@ static int a11_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 static int a11_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
-{
-  	
-    char fpath[1000];
+{ 
+    char fpath[1000],cekname[1000];
 	if(strcmp(path,"/") == 0)
 	{
 		path=dirpath;
